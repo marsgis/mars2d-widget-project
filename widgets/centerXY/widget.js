@@ -1,14 +1,15 @@
 ;(function (window, mars2d) {
   //创建widget类，需要继承BaseWidget
   class MyWidget extends es5widget.BaseWidget {
+    pointEntity
     //弹窗配置
     get view() {
       return {
         type: "window",
         url: "view.html",
         windowOptions: {
-          width: 210,
-          height: 170
+          width: 345,
+          height: 200
         }
       }
     }
@@ -17,40 +18,80 @@
       this.viewWindow = result
     }
     //激活插件
-    activate() {
-      this.map.on("click", this.mouseClickHandler, this)
-    }
+    activate() {}
     //释放插件
     disable() {
-      this.map.off("click", this.mouseClickHandler, this)
-
-      if (this.markerXY) {
-        this.markerXY.remove()
-        this.markerXY = null
-      }
+      this.map.graphicLayer.removeGraphic(this.pointEntity)
+      this.pointEntity = null
       this.viewWindow = null
     }
-    mouseClickHandler(e) {
-      let latlng = e.latlng
-      latlng.format()
 
-      this.viewWindow.showLatlng(latlng)
-      this.flyToPoint(e.latlng, false)
-    }
-    getMapCenter() {
-      return this.map.getCenter()
+    getFormatNum(num, digits) {
+      return mars2d.Util.formatNum(num, digits)
     }
 
-    flyToPoint(latlng, flyTo) {
-      if (this.markerXY == null) {
-        this.markerXY = L.marker(latlng)
-        this.map.addLayer(this.markerXY)
+    getDms2degree(jd_du, jd_fen, jd_miao) {
+      return mars2d.PointTrans.dms2degree(jd_du, jd_fen, jd_miao)
+    }
+
+    getProj4Trans(arrdata, fromProjParams, toProjParams) {
+      return mars2d.PointTrans.proj4Trans(arrdata, fromProjParams, toProjParams)
+    }
+
+    getDegree2dms(currJD) {
+      return mars2d.PointTrans.degree2dms(currJD)
+    }
+
+    bindMourseClick(callback) {
+      this.map.once(mars2d.EventType.click, (event) => {
+        let coordinate = event.latlng //经纬度坐标
+
+        callback(coordinate.lng, coordinate.lat)
+
+        //更新面板
+        let selectType = $('input:radio[name="rdoType"]:checked').val()
+        switch (selectType) {
+          default:
+            //十进制
+            this.viewWindow.updateTen()
+            break
+          case "2": //度分秒
+            this.viewWindow.updataDfm()
+            break
+          case "3": //CGCS2000
+            {
+              let selectType2 = $('input:radio[name="rdoGkType"]:checked').val()
+              if (selectType2 == "2") {
+                this.viewWindow.updata6GKZone()
+              } else {
+                this.viewWindow.updata3GKZone()
+              }
+            }
+            break
+        }
+        //end
+        this.viewWindow.updateMarker()
+      })
+    }
+
+    flyToGraphic(pointEntity) {
+      this.map.flyToGraphic(pointEntity)
+    }
+
+    updateMarker(currWD, currJD) {
+      let latlng = [currWD, currJD]
+      if (this.pointEntity == null) {
+        this.pointEntity = new mars2d.graphic.Marker({
+          latlng: latlng,
+          style: {
+            image: "img/marker/mark1.png",
+            width: 32,
+            height: 44
+          }
+        })
+        this.map.graphicLayer.addGraphic(this.pointEntity)
       } else {
-        this.markerXY.setLatLng(latlng)
-      }
-
-      if (flyTo) {
-        this.map.flyToPoint(latlng)
+        this.pointEntity.latlng = latlng
       }
     }
   }

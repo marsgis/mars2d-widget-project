@@ -60,7 +60,7 @@
 
       //查询控制器
       this._queryPoi = new mars2d.query.QueryPOI({
-        // service: mars2d.QueryServiceType.GAODE
+        // city: '合肥市',
       })
     }
     //每个窗口创建完成后调用
