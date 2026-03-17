@@ -1,6 +1,6 @@
 {
 	"name": "mars2d",
-	"version": "3.3.6",
+	"version": "3.4.0",
 	"description": "Mars2D地理信息平台",
 	"main": "./mars2d.js",
 	"types": "./mars2d.d.ts",
@@ -26,7 +26,7 @@
 		"gis",
 		"webgis"
 	],
-	"author": "火星科技",
+	"author": "mars2d",
 	"license": "Apache-2.0",
 	"homepage": "http://mars2d.cn",
 	"build": {
